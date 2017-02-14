@@ -6,8 +6,8 @@ using namespace cv;
 //--------------------------------------------------------------
 void ofApp::setup(){
  
-    video.load("Wiretouch.MOV");
-    video.play();
+    video.load("Wiretouch2.MOV");
+//    video.play();
     video.setVolume(0);
     
     outImg.allocate(video.getWidth(),video.getHeight(),OF_IMAGE_GRAYSCALE);
@@ -15,6 +15,9 @@ void ofApp::setup(){
 
     webcam.initGrabber(ofGetWidth(),ofGetHeight());
     webcam.setup(ofGetWidth(),ofGetHeight());
+    webcam.listDevices();
+    
+    
     
     output_type = OF_IMAGE_COLOR_ALPHA;
     input_type  = OF_IMAGE_GRAYSCALE;
@@ -23,13 +26,17 @@ void ofApp::setup(){
     gui_image.add(image_res.set("Resolution",ofPoint(video.getWidth(),video.getHeight()),ofPoint(0,0),ofPoint(video.getWidth(),video.getHeight())));
     gui_image.add(image_scale.set("Scale",1.0,0.0,1.0));
     gui_image.add(cv_thresh.set("Threshold",ofPoint(0,255),ofPoint(0,0),ofPoint(0,255)));
-    gui_image.add(use_cam.set("Use Cam?",false));
+    gui_image.add(use_cam.set("Use Cam?",true));
     
+    use_cam = true;
     capture_frames = false;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    video.nextFrame();
+    video.update();
+    
     bool newFrame = video.isFrameNew();
     
     if(use_cam){
@@ -47,31 +54,28 @@ void ofApp::update(){
         bw.setImageType(input_type);
 //        bw.resize(image_res->x*image_scale,image_res->y*image_scale);
 //        bw.getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST); //prevents interpolation when dsampling
-//        bw.update();
+        bw.update();
 //        bw.resize(video.getWidth(),video.getHeight());
         
         /*---------------------
          DISTANCE TRANSFORM
          ---------------------*/
-        Mat kernel = (Mat_<float>(3,3) <<
-                      1,  1, 1,
-                      1, -8, 1,
-                      1,  1, 1);
         Mat dist;
         Mat t_src = toCv(bw.getPixels());
         Mat src;
         
         t_src.convertTo(src, CV_8UC1);
         
-        threshold(src, src, cv_thresh->x,cv_thresh->y, CV_THRESH_BINARY | CV_THRESH_OTSU);
-        
         ofPixels cvOut;
         
-        distanceTransform(src, dist, CV_DIST_L2, 3);
+        threshold(src, src, 40, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
+        
+        distanceTransform(src, dist, CV_DIST_L1, 3);
         
         normalize(dist,dist,0.0,1.0,NORM_MINMAX);
         
-        imshow("dist",dist);
+//        imshow("dist",dist);
+//        imshow("src",src);
         
         toOf(dist, cvOut);
         
@@ -87,13 +91,11 @@ void ofApp::update(){
             ofSaveImage(outImg, "renders/"+ofToString(ofGetFrameNum())+".png" );
         }
     }
-    
-    video.nextFrame();
-    video.update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    ofSetBackgroundColor(0);
     outImg.draw(0,0,ofGetWidth(),ofGetHeight());
     gui_image.draw();
 }
