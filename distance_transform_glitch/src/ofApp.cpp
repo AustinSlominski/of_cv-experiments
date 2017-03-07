@@ -6,7 +6,7 @@ using namespace cv;
 //--------------------------------------------------------------
 void ofApp::setup(){
  
-    video.load("Wiretouch2.MOV");
+    video.load("Wiretouch3.MOV");
 //    video.play();
     video.setVolume(0);
     
@@ -28,8 +28,8 @@ void ofApp::setup(){
     gui_image.add(cv_thresh.set("Threshold",ofPoint(0,255),ofPoint(0,0),ofPoint(0,255)));
     gui_image.add(use_cam.set("Use Cam?",true));
     
-    use_cam = true;
-    capture_frames = false;
+    use_cam = false;
+    capture_frames = true;
 }
 
 //--------------------------------------------------------------
